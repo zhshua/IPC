@@ -60,9 +60,9 @@ int main()
 		cout << "进程信息采集完毕" << endl;
 		wmi.ReleaseWmi();
 		char TwinCatPath[] = "C:\\TwinCAT";
-		char fileName1[] = "C:\\数据\\工控系统文件.txt";
+		char fileName1[] = "C:\\data\\industrial_system_files.txt";
 		writeTime(fileName1);
-		char fileName2[] = "C:\\数据\\工控编程文件.txt";
+		char fileName2[] = "C:\\data\\industrial_programming_files.txt";
 		writeTime(fileName2);
 		getTwinCatInfo(TwinCatPath);
 		cout << "工控信息采集完毕" << endl;
@@ -70,7 +70,7 @@ int main()
 		cout << "端口信息采集完毕" << endl;
 		getRegitHash();
 		cout << "注册表信息采集完毕" << endl;
-		char path[] = "C:\\数据\\*.txt";
+		char path[] = "C:\\data\\*.txt";
 		findFile(path);
 		char str[] = "overover";
 		//udpSend(str);
@@ -89,7 +89,7 @@ void writeTime(const char fileName[]) {
 	ofstream file(fileName);
 	if (file.is_open())
 	{
-		file << "获取时间=";
+		file << "get_time:";
 		file << tmp;
 		file.close();
 	}
@@ -186,21 +186,21 @@ void getSysInfo(CWmiInfo wmi) {
 	char ip[20];
 	getIP(ip);
 
-	char fileName[] = "C:\\数据\\系统信息.txt";
+	char fileName[] = "C:\\data\\system_info.txt";
 	writeTime(fileName);
 	ofstream file(fileName, ios::out | ios::app);
 	if (file.is_open())
 	{
-		file << "\nip地址=";
+		file << "\nip_address:";
 		file << ip;
-		file << "\n操作系统=";
+		file << "\nOS:";
 		file << SysType;
-		file << "\nCPU利用率=";
+		file << "\ncpu_usage:";
 		file << CpuPre;
 		file << "%";
-		file << "\n本次开机时间=";
+		file << "\nthis_boot_time:";
 		file << SysStartTime;
-		file << "\n最近一次异常断点时间=";
+		file << "\nlast_abnormal_shutdown_time:";
 		file << ErrorEndTime;
 		file.close();
 	}
@@ -237,7 +237,7 @@ void getErrorTime(char time[20]) {
 	char temp[1024] = "\0";
 	fgets(temp, sizeof(temp), pp);
 	if (temp[0] == '\0') {
-		strncpy_s(time, 20, "无", 3);
+		strncpy_s(time, 20, "no", 3);
 	}
 	else {
 		for (int i = 0; i < 3; i++)
@@ -299,7 +299,7 @@ void getDisk(CWmiInfo wmi) {
 	char freeSize[10][500];
 	Split(freeSize, strRetValue, "\n");
 
-	char fileName[] = "C:\\数据\\磁盘信息.txt";
+	char fileName[] = "C:\\data\\disk.txt";
 	ofstream file(fileName);
 	if (file.is_open()) {
 		for (int i = 0; i < num; i++) {
@@ -310,13 +310,13 @@ void getDisk(CWmiInfo wmi) {
 			allSizeFloat = ((float)((int)((allSizeFloat + 0.005) * 100))) / 100;
 			useSizeFloat = ((float)((int)((useSizeFloat + 0.005) * 100))) / 100;
 			diskPre = ((float)((int)((diskPre + 0.005) * 100))) / 100;
-			file << "磁盘名=";
+			file << "name:";
 			file << diskName[i];
-			file << "\n总大小=";
+			file << "\ntotal_size:";
 			file << allSizeFloat;
-			file << "G\n已用大小=";
+			file << "G\nused_size:";
 			file << useSizeFloat;
-			file << "G\n使用率=";
+			file << "G\ndisk_usage:";
 			file << diskPre;
 			file << "%\n";
 		}
@@ -327,18 +327,18 @@ void getDisk(CWmiInfo wmi) {
 	wmi.GetSingleItemInfo(_T("Win32_DiskDrive"), _T("SerialNumber"), strRetValue);
 	char SerialNumber[10][500];
 	num = Split(SerialNumber, strRetValue, "\n");
-	char fileName1[] = "C:\\数据\\外设信息.txt";
+	char fileName1[] = "C:\\data\\mobile_device.txt";
 	ofstream file1(fileName1);
 	if (file1.is_open()) {
 		int j = 1;
 		if (flag == 0) {
-			file1 << "无外设插入";
+			file1 << "no mobile_device insert";
 		}
 		else {
 			for (int i = flag; i < allNum; i++) {
-				file1 << "外设名:";
+				file1 << "name:";
 				file1 << diskName[i];
-				file1 << "\n标识码:";
+				file1 << "\nserial_number:";
 				file1 << SerialNumber[j];
 				file1 << "\n";
 				j++;
@@ -366,14 +366,14 @@ void getMemory(CWmiInfo wmi) {
 	allSize = ((float)((int)((allSize + 0.005) * 100))) / 100;
 	memoryPre = ((float)((int)((memoryPre + 0.005) * 100))) / 100;
 
-	char fileName[] = "C:\\数据\\内存.txt";
+	char fileName[] = "C:\\data\\memory.txt";
 	writeTime(fileName);
 	ofstream file(fileName);
 	if (file.is_open())
 	{
-		file << "内存大小=";
+		file << "memory_size:";
 		file << allSize;
-		file << "G\n内存利用率=";
+		file << "G\nmemory_usage:";
 		file << memoryPre;
 		file << "%";
 		file.close();
@@ -416,15 +416,15 @@ void getTwinCatInfo(const char* dir) {
 				char sha1[80];
 				getSha1(fileName, sha1);
 
-				char writeFileName[] = "C:\\数据\\工控系统文件.txt";
+				char writeFileName[] = "C:\\data\\industrial_system_files.txt";
 				ofstream writeFile(writeFileName, ios::out | ios::app);
 				if (writeFile.is_open())
 				{
-					writeFile << "\n\n文件名=";
+					writeFile << "\n\nname:";
 					writeFile << findData.cFileName;
-					writeFile << "\n文件路径=";
+					writeFile << "\npath:";
 					writeFile << fileName;
-					writeFile << "\n哈希值=";
+					writeFile << "\nSha1:";
 					writeFile << sha1;
 					writeFile.close();
 				}
@@ -438,15 +438,15 @@ void getTwinCatInfo(const char* dir) {
 				char sha1[80];
 				getSha1(fileName, sha1);
 
-				char writeFileName[] = "C:\\数据\\工控编程文件.txt";
+				char writeFileName[] = "C:\\data\\industrial_programming_files.txt";
 				ofstream writeFile(writeFileName, ios::out | ios::app);
 				if (writeFile.is_open())
 				{
-					writeFile << "\n\n文件名=";
+					writeFile << "\n\nnam:";
 					writeFile << findData.cFileName;
-					writeFile << "\n文件路径=";
+					writeFile << "\npath:";
 					writeFile << fileName;
-					writeFile << "\n哈希值=";
+					writeFile << "\nSha1:";
 					writeFile << sha1;
 					writeFile.close();
 				}
@@ -462,7 +462,7 @@ void getPatchInfo(CWmiInfo wmi) {
 	char patchID[200][500];
 	char patchFrom[200][500];
 	char installTime[200][500];
-	char fileName[] = "C:\\数据\\补丁.txt";
+	char fileName[] = "C:\\data\\patch.txt";
 
 	wmi.GetSingleItemInfo(_T("Win32_QuickFixEngineering"), _T("HotFixID"), strRetValue);
 	int len = Split(patchID, strRetValue, "\n");
@@ -479,11 +479,11 @@ void getPatchInfo(CWmiInfo wmi) {
 	for (int i = 0; i < len; i++) {
 		if (file.is_open())
 		{
-			file << "补丁名称=";
+			file << "name:";
 			file << patchID[i];
-			file << "\n补丁来源=";
+			file << "\npath:";
 			file << patchFrom[i];
-			file << "\n安装日期=";
+			file << "\ninstall_day:";
 			file << installTime[i];
 			file << "\n";
 		}
@@ -495,8 +495,8 @@ void getService(CWmiInfo wmi) {
 	CString strRetValue;
 	char serviceName[300][500];
 	char serviceAddress[300][500];
-	char fileName1[] = "C:\\数据\\系统服务.txt";
-	char fileName2[] = "C:\\数据\\非系统服务.txt";
+	char fileName1[] = "C:\\data\\system_services.txt";
+	char fileName2[] = "C:\\data\\notsystem_services.txt";
 
 	char sysName1[] = "C:\\Windows\\system32";
 	char sysName2[] = "C:\\Windows\\System32";
@@ -518,9 +518,9 @@ void getService(CWmiInfo wmi) {
 			//是系统服务
 			if (file1.is_open())
 			{
-				file1 << "服务名称=";
+				file1 << "name:";
 				file1 << serviceName[i];
-				file1 << "\n启动路径=";
+				file1 << "\npath:";
 				file1 << path;
 				file1 << "\n";
 			}
@@ -528,9 +528,9 @@ void getService(CWmiInfo wmi) {
 		else {
 			if (file2.is_open())
 			{
-				file2 << "服务名称=";
+				file2 << "name:";
 				file2 << serviceName[i];
-				file2 << "\n启动路径=";
+				file2 << "\npath:";
 				file2 << path;
 				file2 << "\n";
 			}
@@ -543,7 +543,7 @@ void getService(CWmiInfo wmi) {
 void getUserAccount(CWmiInfo wmi) {
 	CString strRetValue;
 	char name[100][500];
-	char fileName[] = "C:\\数据\\账户.txt";
+	char fileName[] = "C:\\data\\login_user.txt";
 
 	wmi.GetSingleItemInfo(_T("Win32_UserAccount WHERE Disabled='False'"), _T("Name"), strRetValue);
 	int len = Split(name, strRetValue, "\n");
@@ -554,9 +554,9 @@ void getUserAccount(CWmiInfo wmi) {
 		lastTime(name[i], time);
 		if (file.is_open())
 		{
-			file << "账户名=";
+			file << "user:";
 			file << name[i];
-			file << "\n上次登录时间=";
+			file << "\nlast_login_time:";
 			file << time;
 			file << "\n";
 		}
@@ -608,16 +608,16 @@ void getExeInfo(CWmiInfo wmi) {
 	char publish[500][500];
 	int len3 = Split(publish, strRetValue, "\n");
 
-	char fileName[] = "C:\\数据\\exe.txt";
+	char fileName[] = "C:\\data\\application.txt";
 	ofstream file(fileName);
 	for (int i = 0; i < len1; i++) {
 		if (file.is_open())
 		{
-			file << "应用名=";
+			file << "name:";
 			file << name[i];
-			file << "\n版本号=";
+			file << "\nversion:";
 			file << version[i];
-			file << "\n发行商=";
+			file << "\npublish:";
 			file << publish[i];
 			file << "\n";
 		}
@@ -636,14 +636,14 @@ void getProcess(CWmiInfo wmi) {
 	char path[500][500];
 	int len2 = Split(path, strRetValue, "\n");
 
-	char fileName[] = "C:\\数据\\进程.txt";
+	char fileName[] = "C:\\data\\process.txt";
 	ofstream file(fileName);
 	for (int i = 3; i < len1; i++) {
 		if (file.is_open())
 		{
-			file << "进程名=";
+			file << "name:";
 			file << name[i];
-			file << "\n路径=";
+			file << "\npath:";
 			file << path[i];
 			file << "\n";
 		}
@@ -729,13 +729,13 @@ void getPort() {
 			portArray[j] = port;
 		}
 	}
-	char fileName[] = "C:\\数据\\端口.txt";
+	char fileName[] = "C:\\data\\network_port.txt";
 	ofstream file(fileName);
 	i = 0;
 	while (portArray[i] != 0) {
 		if (file.is_open())
 		{
-			file << "端口号:";
+			file << "port:";
 			file << portArray[i];
 			file << "\n";
 		}
@@ -788,18 +788,18 @@ void getRegitHash() {
 	getSha1("C:\\HKCC.reg", sha1[2]);
 	getSha1("C:\\HKLM.reg", sha1[3]);
 	getSha1("C:\\HKU.reg", sha1[4]);
-	char fileName[] = "C:\\数据\\注册表.txt";
+	char fileName[] = "C:\\data\\regedit.txt";
 	ofstream file(fileName);
 	if (file.is_open()){
-		file << "HKCR表的sha1值:";
+		file << "HKCR_table_sha1:";
 		file << sha1[0];
-		file << "\nHKCU表的sha1值:";
+		file << "\nHKCU_table_sha1:";
 		file << sha1[1];
-		file << "\nHKCC表的sha1值:";
+		file << "\nHKCC_table_sha1:";
 		file << sha1[2];
-		file << "\nHKLM表的sha1值:";
+		file << "\nHKLM_table_sha1:";
 		file << sha1[3];
-		file << "\nHKU表的sha1值:";
+		file << "\nHKU_table_sha1:";
 		file << sha1[4];
 	}
 	file.close();
@@ -862,7 +862,7 @@ void findFile(char path[]) {
 		// 忽略"."和".."两个结果 
 		if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
 			continue;
-		char filePath[100] = "C:\\数据\\";
+		char filePath[100] = "C:\\data\\";
 		strcat_s(filePath, findData.cFileName);
 		udpSend(filePath);
 	} while (FindNextFile(hFind, &findData));
