@@ -61,9 +61,9 @@ int main()
 		wmi.ReleaseWmi();
 		char TwinCatPath[] = "C:\\TwinCAT";
 		char fileName1[] = "C:\\data\\industrial_system_files.txt";
-		writeTime(fileName1);
+		//writeTime(fileName1);
 		char fileName2[] = "C:\\data\\industrial_programming_files.txt";
-		writeTime(fileName2);
+		//writeTime(fileName2);
 		getTwinCatInfo(TwinCatPath);
 		cout << "工控信息采集完毕" << endl;
 		getPort();
@@ -193,7 +193,7 @@ void getSysInfo(CWmiInfo wmi) {
 	{
 		file << "\nip_address:";
 		file << ip;
-		file << "\nOS:";
+		file << "OS:";
 		file << SysType;
 		file << "\ncpu_usage:";
 		file << CpuPre;
@@ -420,7 +420,7 @@ void getTwinCatInfo(const char* dir) {
 				ofstream writeFile(writeFileName, ios::out | ios::app);
 				if (writeFile.is_open())
 				{
-					writeFile << "\n\nname:";
+					writeFile << "\nname:";
 					writeFile << findData.cFileName;
 					writeFile << "\npath:";
 					writeFile << fileName;
@@ -442,7 +442,7 @@ void getTwinCatInfo(const char* dir) {
 				ofstream writeFile(writeFileName, ios::out | ios::app);
 				if (writeFile.is_open())
 				{
-					writeFile << "\n\nnam:";
+					writeFile << "\nname:";
 					writeFile << findData.cFileName;
 					writeFile << "\npath:";
 					writeFile << fileName;
