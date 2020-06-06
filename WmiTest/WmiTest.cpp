@@ -32,51 +32,41 @@ void getExeInfo(CWmiInfo wmi);
 void getProcess(CWmiInfo wmi);
 void getPort();
 void getRegitHash();
-void udpSend(char path[]);
-void findFile(char path[]);
 
 
 
 int main()
 {
-	while (true) {
-		CWmiInfo wmi;
-		wmi.InitWmi();
-		getSysInfo(wmi);//获取ip地址，操作系统版本，CPU利用率，本次开机时间，最近一次异常断电时间
-		cout << "系统信息采集完毕" << endl;
-		getDisk(wmi);
-		cout << "磁盘信息采集完毕" << endl;
-		getMemory(wmi);
-		cout << "内存信息采集完毕" << endl;
-		getPatchInfo(wmi);
-		cout << "补丁信息采集完毕" << endl;
-		getService(wmi);
-		cout << "服务信息采集完毕" << endl;
-		getUserAccount(wmi);
-		cout << "账户信息采集完毕" << endl;
-		getExeInfo(wmi);
-		cout << "应用程序信息采集完毕" << endl;
-		getProcess(wmi);
-		cout << "进程信息采集完毕" << endl;
-		wmi.ReleaseWmi();
-		char TwinCatPath[] = "C:\\TwinCAT";
-		char fileName1[] = "C:\\data\\industrial_system_files.txt";
-		//writeTime(fileName1);
-		char fileName2[] = "C:\\data\\industrial_programming_files.txt";
-		//writeTime(fileName2);
-		getTwinCatInfo(TwinCatPath);
-		cout << "工控信息采集完毕" << endl;
-		getPort();
-		cout << "端口信息采集完毕" << endl;
-		getRegitHash();
-		cout << "注册表信息采集完毕" << endl;
-		char path[] = "C:\\data\\*.txt";
-		findFile(path);
-		char str[] = "overover";
-		//udpSend(str);
-		cout << "发送完成" << endl;
-		Sleep(1800000);
-	}
+	CWmiInfo wmi;
+	wmi.InitWmi();
+	getSysInfo(wmi);//获取ip地址，操作系统版本，CPU利用率，本次开机时间，最近一次异常断电时间
+	cout << "sysinfo over" << endl;
+	getDisk(wmi);
+	cout << "disk over" << endl;
+	getMemory(wmi);
+	cout << "memory over" << endl;
+	getPatchInfo(wmi);
+	cout << "patch over" << endl;
+	getService(wmi);
+	cout << "service over" << endl;
+	getUserAccount(wmi);
+	cout << "user over" << endl;
+	getExeInfo(wmi);
+	cout << "app over" << endl;
+	getProcess(wmi);
+	cout << "process over" << endl;
+	wmi.ReleaseWmi();
+	char TwinCatPath[] = "C:\\TwinCAT";
+	char fileName1[] = "C:\\data\\industrial_system_files.txt";
+	//writeTime(fileName1);
+	char fileName2[] = "C:\\data\\industrial_programming_files.txt";
+	//writeTime(fileName2);
+	getTwinCatInfo(TwinCatPath);
+	cout << "TwinCatInfo over" << endl;
+	getPort();
+	cout << "port over" << endl;
+	getRegitHash();
+	cout << "regedit over" << endl;
 }
 
 void writeTime(const char fileName[]) {
@@ -186,21 +176,21 @@ void getSysInfo(CWmiInfo wmi) {
 	char ip[20];
 	getIP(ip);
 
-	char fileName[] = "C:\\data\\system_info.txt";
+	char fileName[] = "C:\\data\\sysinfo.txt";
 	writeTime(fileName);
 	ofstream file(fileName, ios::out | ios::app);
 	if (file.is_open())
 	{
-		file << "\nip_address:";
+		file << "\nip:";
 		file << ip;
-		file << "OS:";
+		file << "systype:";
 		file << SysType;
 		file << "\ncpu_usage:";
 		file << CpuPre;
 		file << "%";
-		file << "\nthis_boot_time:";
+		file << "\nstartTime:";
 		file << SysStartTime;
-		file << "\nlast_abnormal_shutdown_time:";
+		file << "\nerrorTime:";
 		file << ErrorEndTime;
 		file.close();
 	}
@@ -803,67 +793,4 @@ void getRegitHash() {
 		file << sha1[4];
 	}
 	file.close();
-}
-
-void udpSend(char path[]) {
-	WSADATA wsd;
-	SOCKET s;
-
-	if (WSAStartup(MAKEWORD(2, 2), &wsd))
-	{
-		printf("WSAStartup failed!\n");
-		return;
-	}
-
-	s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (s == INVALID_SOCKET)
-	{
-		printf("socket failed,Error Code:%d\n", WSAGetLastError());
-		WSACleanup();
-		return;
-	}
-	SOCKADDR_IN addr;
-	SOCKET sockClient = socket(AF_INET, SOCK_DGRAM, 0);
-
-	addr.sin_family = AF_INET;
-	addr.sin_addr.S_un.S_addr = inet_addr("192.168.0.109");
-	addr.sin_port = htons(1401);
-
-	sendto(sockClient, path, 1024, 0, (sockaddr*)&addr, 1024);
-
-	char msg[1024];
-	ifstream file(path);
-	if (file.is_open()) {
-		while (!file.eof()) {
-			file.getline(msg, 500);
-			sendto(sockClient, msg, 1024, 0, (sockaddr*)&addr, 1024);
-			Sleep(3);
-		}
-		file.close();
-
-		sendto(sockClient, "over", 1024, 0, (sockaddr*)&addr, 1024);
-	}
-	closesocket(s);
-	WSACleanup();
-}
-
-void findFile(char path[]) {
-	HANDLE hFind;
-	WIN32_FIND_DATA findData;
-	LARGE_INTEGER size;
-	hFind = FindFirstFile(path, &findData);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
-		cout << "Failed to find first file!\n";
-		return;
-	}
-	do
-	{
-		// 忽略"."和".."两个结果 
-		if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
-			continue;
-		char filePath[100] = "C:\\data\\";
-		strcat_s(filePath, findData.cFileName);
-		udpSend(filePath);
-	} while (FindNextFile(hFind, &findData));
 }
