@@ -410,12 +410,13 @@ void getTwinCatInfo(const char* dir) {
 				ofstream writeFile(writeFileName, ios::out | ios::app);
 				if (writeFile.is_open())
 				{
-					writeFile << "\nname:";
+					writeFile << "name:";
 					writeFile << findData.cFileName;
 					writeFile << "\npath:";
 					writeFile << fileName;
-					writeFile << "\nSha1:";
+					writeFile << "\nsha1:";
 					writeFile << sha1;
+					writeFile << "\n";
 					writeFile.close();
 				}
 			}
@@ -432,12 +433,13 @@ void getTwinCatInfo(const char* dir) {
 				ofstream writeFile(writeFileName, ios::out | ios::app);
 				if (writeFile.is_open())
 				{
-					writeFile << "\nname:";
+					writeFile << "name:";
 					writeFile << findData.cFileName;
 					writeFile << "\npath:";
 					writeFile << fileName;
-					writeFile << "\nSha1:";
+					writeFile << "\nsha1:";
 					writeFile << sha1;
+					writeFile << "\n";
 					writeFile.close();
 				}
 			}
@@ -473,7 +475,7 @@ void getPatchInfo(CWmiInfo wmi) {
 			file << patchID[i];
 			file << "\npath:";
 			file << patchFrom[i];
-			file << "\ninstall_day:";
+			file << "\ninstall_time:";
 			file << installTime[i];
 			file << "\n";
 		}
@@ -781,15 +783,15 @@ void getRegitHash() {
 	char fileName[] = "C:\\data\\regedit.txt";
 	ofstream file(fileName);
 	if (file.is_open()){
-		file << "HKCR_table_sha1:";
+		file << "HKCR:";
 		file << sha1[0];
-		file << "\nHKCU_table_sha1:";
+		file << "\nHKCU:";
 		file << sha1[1];
-		file << "\nHKCC_table_sha1:";
+		file << "\nHKCC:";
 		file << sha1[2];
-		file << "\nHKLM_table_sha1:";
+		file << "\nHKLM:";
 		file << sha1[3];
-		file << "\nHKU_table_sha1:";
+		file << "\nHKU:";
 		file << sha1[4];
 	}
 	file.close();
