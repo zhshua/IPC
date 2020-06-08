@@ -783,15 +783,20 @@ void getRegitHash() {
 	char fileName[] = "C:\\data\\regedit.txt";
 	ofstream file(fileName);
 	if (file.is_open()){
-		file << "HKCR:";
+		file << "name:HKCR";
+		file << "\nsha1:";
 		file << sha1[0];
-		file << "\nHKCU:";
+		file << "\name:HKCU";
+		file << "\nsha1:";
 		file << sha1[1];
-		file << "\nHKCC:";
+		file << "\nname:HKCC";
+		file << "\nsha1:";
 		file << sha1[2];
-		file << "\nHKLM:";
+		file << "\nname:HKLM";
+		file << "\nsha1:";
 		file << sha1[3];
-		file << "\nHKU:";
+		file << "\nname:HKU";
+		file << "\nsha1:";
 		file << sha1[4];
 	}
 	file.close();
