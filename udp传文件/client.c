@@ -22,22 +22,31 @@ char file_name[MAX][1000];//存储目录下的所有文件名
 
 void ErrorHandling(char *message);
 int SaveFilePath(char *dir);//获取目录下待传输的所有文件
-void TransferFile(char *dir);//udp传输文件
+int TransferFile(char *dir);//udp传输文件
 
 int main()
 {
-	char txtdir[] = "C:\\Users\\ZS\\Desktop\\project\\txtdata";//txt文件的根目录
-	printf("正在传输txtdata...\n");
-	TransferFile(txtdir);
-	Sleep(2000);
-	char pcapdir[] = "C:\\Users\\ZS\\Desktop\\project\\pcapdata";//pcap文件的根目录
-	printf("正在传输pcapdata...\n");
-	TransferFile(pcapdir);
+	while (1)
+	{
+		Sleep(2000);
+		char txtdir[] = "C:\\data\\txtdata";//txt文件的根目录
+		printf("正在传输txtdata...\n");
+		if (TransferFile(txtdir) == 0)
+			continue;
+		//Sleep(2000);
+		char pcapdir[] = "C:\\data\\pcapdata";//pcap文件的根目录
+		printf("正在传输pcapdata...\n");
+		if (TransferFile(pcapdir) == 0)
+			continue;
+		//Sleep(2000);
+	}
+	
 	return 0;
 }
 
-void TransferFile(char *dir)
+int TransferFile(char *dir)
 {
+	Sleep(2000);
 	int path_num = SaveFilePath(dir);
 
 	WSADATA wsaData;
@@ -46,7 +55,7 @@ void TransferFile(char *dir)
 	FILE *fp;
 	//char ch;
 	//int index;
-	char *server_ip = "192.168.0.103";//server ip
+	char *server_ip = "192.168.0.102";//server ip
 	char *port = "9190";//port
 
 	SOCKADDR_IN servAdr;
@@ -63,6 +72,19 @@ void TransferFile(char *dir)
 	servAdr.sin_port = htons(atoi(port));
 	connect(sock, (SOCKADDR*)&servAdr, sizeof(servAdr));
 
+	char start[30] = "startstart";
+
+	send(sock, start, strlen(start), 0);//发送传输文件的请求
+	memset(start, 0, sizeof(start));
+	recv(sock, start, sizeof(start) - 1, 0);
+	if (strcmp(start, "okok") != 0)
+	{
+		closesocket(sock);
+		WSACleanup();
+		return 0;
+
+	}
+		
 	char temp[30];
 	sprintf(temp, "%d", path_num);
 	sendto(sock, temp, strlen(temp), 0, (SOCKADDR*)&servAdr, sizeof(servAdr));//发送文件个数
@@ -117,6 +139,7 @@ void TransferFile(char *dir)
 
 	closesocket(sock);
 	WSACleanup();
+	return 1;
 }
 
 void ErrorHandling(char *message)
