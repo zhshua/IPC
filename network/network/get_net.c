@@ -1,4 +1,3 @@
-#define WIN32
 #define LINE_LEN 16
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "wpcap.lib")
@@ -8,18 +7,15 @@
 #include <remote-ext.h>
 #include <time.h>
 #include <conio.h>
-#define HAVE_REMOTE
 
 void packet_handler(u_char * param, const struct pcap_pkthdr * header, const  u_char *pkt_data/*,const u_char *param1*/);
-int CreateFolder();
 
 int z = 1, k = 1;
 int iNum = 1;//网络接口
 int sec = 20;//保存间隔s
 int min = 3;//捕获时长m
 char name[100] = "\\catch_num1_data.pcap";//这个别改
-char name1[100];
-char path[200] = "C:\\Users\\ZS\\Desktop\\data\\";//保存路径
+char path[200] = "C:\\data\\pcapdata\\";//保存路径
 char path1[200];
 clock_t t1;
 pcap_t * adhandle;
@@ -66,7 +62,7 @@ int main()
 	//scanf("%d", &min);
 	//printf("\n请选择保存路径(双\\分隔符):");
 	//scanf("%s", &path);
-	strcpy(path1, CreateFolder());
+	strcpy(path1, path);
 
 	if (iNum < 1 || iNum > i)
 	{
@@ -141,15 +137,16 @@ void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *pkt_header, cons
 	printf("catch %d packets\n", z++);
 	if (clock() > (t1 + 60 * min * CLOCKS_PER_SEC)) {
 		printf("catch stop\n");
-		system("pause");
-		exit(0);
+		//system("pause");
+		pcap_breakloop(adhandle);
+		return;
 	}
 	else if (clock() > (t1 + k * sec * CLOCKS_PER_SEC)) {
 		memset(path1, '\0', sizeof(path1));
 		strcpy(path1, path);
 		sprintf(name, "\\catch_num%d_data.pcap", ++k);
 		strcat(path1, name);
-		dumpfile = pcap_dump_open(adhandle, path1);
+		dumpfile = (u_char *)pcap_dump_open(adhandle, path1);
 		pcap_dump(dumpfile, pkt_header, pkt_data);
 		if (_kbhit()) {
 			printf("catch stop\n");
@@ -159,20 +156,4 @@ void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *pkt_header, cons
 	}
 	pcap_dump(dumpfile, pkt_header, pkt_data);
 	return;
-}
-int CreateFolder()
-{
-	SYSTEMTIME sys;
-	GetLocalTime(&sys);
-	sprintf(name1, "%4d-%02d-%02d %02d：%02d：%02d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond);
-	strcat(path, name1);
-	//文件夹名称
-	//char folderName[] = name1;
-
-	// 文件夹不存在则创建文件夹
-	if (_access(path, 0) == -1)
-	{
-		_mkdir(path);
-	}
-	return path;
 }
