@@ -49,31 +49,11 @@ def jx(fpcap, mydb):  # 待解析的pcap文件，解析结果保存路径，数�
     pcap = dpkt.pcap.Reader(f)
     total = 0
     a = 0
-    # fvis.writelines("日期,时间,源MAC,目的MAC,源IP,目的IP,协议类型,源端口,目的端口,tcp标志位,包长度,"
-    #                 "源设备号,源设备端口,目的设备号,目的设备端口\n")  # 写下解析结果列名
+    b = 0
 
     mycursor = mydb.cursor()
-    # if mycursor.count()==0:
-    #     id=1
-    # else:
-    #     mycursor.execute("select * from test_limit order by id DESC limit 1;")
-    # id=1
-    # table = input("请输入保存解析结果的表名：")
-    # table = "jiexi"
-    # sql = "DROP TABLE IF EXISTS " + table  # 删除数据表
-    # mycursor.execute(sql)
-    #
-    # mycursor.execute(  # 创建数据表
-    #     "CREATE TABLE " + table + " ("
-    #                               "日期 VARCHAR(255), 时间 VARCHAR(255), 源MAC VARCHAR(255), "
-    #                               "目的MAC VARCHAR(255), 源IP VARCHAR(255),"
-    #                               " 目的IP VARCHAR(255), 协议类型 VARCHAR(255), "
-    #                               "源端口 VARCHAR(255),目的端口 VARCHAR(255),"
-    #                               "tcp标志位 VARCHAR(255), 包长度 VARCHAR(255),"
-    #                               "源设备号 VARCHAR(255),源设备端口 VARCHAR(255),目的设备号 VARCHAR(255),目的设备端口 VARCHAR(255))")
 
     for ts, buf in pcap:  # 循环解析
-
         # eth = dpkt.ethernet.Ethernet(buf)
         if buf[12] != 0x08 or buf[13] != 0x00:  # 如果不是ipv4数据包则跳过
             continue

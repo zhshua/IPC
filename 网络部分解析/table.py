@@ -95,5 +95,20 @@ if __name__ == "__main__":
     ta = table()  # 实例化表类
     ta.login(mydb)  # 登录
 
+    ta.drop_jx()  # 清空
+    ta.drop_fx()
+    ta.drop_dos()
+    ta.drop_port()
+    ta.drop_login()
+    ta.drop_time()
+
+
+    ta.create_jx()  # 创建各种表,第一次运行需要运行此项
+    ta.create_fx()
+    ta.create_dos()
+    ta.create_port()
+    ta.create_login()
+    ta.create_time()
+
     # ta.drop_white()
     # ta.create_white()

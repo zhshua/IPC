@@ -14,94 +14,90 @@ def fx(IP, file, mydb, startid, sum):  # 待分析数据路径，分析结果保
     pd.set_option('display.max_colwidth', 1000)
 
     mycursor = mydb.cursor()
-    #
-    # mycursor.execute("SELECT * FROM 解析表 LIMIT " + str(startid - 1) + "," + str(sum) + "; ")
-    # last = mycursor.fetchall()
-    # result1 = ''.join(str(last))
-    # # print(result1)
-    # # result1=result1.split()
-    # result1 = result1.replace('[', '').replace(']', '').replace('(', '').replace('),', '\n').replace("'", '').replace(
-    #     ')', '').replace(' ', '')
-    # result1 = "日期,时间,源MAC,目的MAC,源IP,目的IP,协议类型,源端口,目的端口,tcp标志位,包长度,源设备号,源设备端口,目的设备号,目的设备端口,来源,id\n" + result1
-    # # print(result1)
-    # f = StringIO(result1)
-    # df = pd.read_csv(f)
-    # # df = pd.read_csv(data)  # 读取解析结果
 
     sqlcom = 'select * from 解析表 limit ' + str(startid - 1) + "," + str(sum)
     df = pd.read_sql(sqlcom, con=mydb)
-
-    end = df.iloc[df.shape[0] - 1, 1]  # 提取起始与终止时间
-    start = df.iloc[0, 1]
-    start = datetime.datetime.strptime(start, '%H:%M:%S')
-    end = datetime.datetime.strptime(end, '%H:%M:%S')
-    sub = end - start  # 计算时间差
-
-    df['包长度'] = df['包长度'].astype(int)
-
-    flow = int(df.sum()['包长度'])  # 计算总流量大小（byte）
-
-    if sub.seconds == 0:
-        flowspeed = (flow / 1)  # 计算流量速度
+    if df.shape[0] == 0:
+        flow = flowspeed = lg = lgfail = portnum = tcpcon = white = 0
+        start = end = '00:00:00'
+        start = datetime.datetime.strptime(start, '%H:%M:%S')
+        end = datetime.datetime.strptime(end, '%H:%M:%S')
     else:
-        flowspeed = (flow / sub.seconds)  # 计算流量速度
-    # print("流量大小：", flow, "byte")
-    # print("流量速度", flowspeed)
-    tcpcon = 0
-    dt = df[(df.目的IP == IP) & ((df.协议类型 == "TCP") | (df.协议类型 == "AMS"))]  # 为TCP连接数与端口统计筛选范围
+        end = df.iloc[df.shape[0] - 1, 1]  # 提取起始与终止时间
+        start = df.iloc[0, 1]
+        start = datetime.datetime.strptime(start, '%H:%M:%S')
+        end = datetime.datetime.strptime(end, '%H:%M:%S')
+        sub = end - start  # 计算时间差
 
-    for i in range(dt.shape[0]):
-        if dt.iloc[i, 9] == 2:  # Flags标志位SYN-0x0002
-            tcpcon = tcpcon + 1
+        df['包长度'] = df['包长度'].astype(int)
 
-    port = dt.groupby('目的端口').describe().reset_index()
-    portnum = port.shape[0]  # 统计被访问端口的数量
+        flow = int(df.sum()['包长度'])  # 计算总流量大小（byte）
 
-    dt = df[(df.目的IP == IP) & ((df.目的端口 == 3389) | (df.源端口 == 3389))]  # 为远程连接筛选范围，3389为远程连接默认端口
-    # dt = df[(df.目的端口 == 3389) | (df.srcport == 3389)]
-    lg = lgout = lgsuccess = lgfail = m = 0
-    conset = False
-    lgset = False  # 设立两个表示连接，登录的状态标志位
-
-    for j in range(dt.shape[0]):  # 根据数据包传输层flag标志位，及其出现顺序、间隔的逻辑判断远程登录状态
-        if (dt.iloc[j, 9] == 20) & (lgset is False) & (conset is False):
-            lg = lg + 1
-            lgfail = lgfail + 1
-            lgset = True
-            m = 0
-        if (dt.iloc[j, 9] == 2) & (0 < m < 2) & (lgset is True):
-            lgsuccess = lgsuccess + 1
-            lgfail = lgfail - 1
-            conset = True
-            lgset = False
-
-        if (2 <= m) & (lgset is True):
-            # lgfail = lgfail + 1
-            lgset = False
-
-        if (dt.iloc[j, 9] == 20) & (conset is True):
-            lgout = lgout + 1
-            conset = False
-        m = m + 1
-    # print(lg, lgsuccess, lgfail, lgout)
-
-    dt=df
-
-    for z in range(df.shape[0]):  # 白名单统计前的网段过滤
-
-        if (((str(df.iloc[z, 4]) in IPy.IP("0.0.0.0-127.255.255.255")) is True) \
-            | ((str(df.iloc[z, 4]) in IPy.IP("128.0.0.0-191.255.255.255")) is True) \
-            | ((str(df.iloc[z, 4]) in IPy.IP("192.0.0.0-223.255.255.255")) is True)) & \
-                (str(df.iloc[z, 5]) == IP):
-            continue
+        if sub.seconds == 0:
+            flowspeed = (flow / 1)  # 计算流量速度
         else:
-            dt = dt.drop([z])
-    dt=dt.reset_index(drop=True)
+            flowspeed = (flow / sub.seconds)  # 计算流量速度
+        # print("流量大小：", flow, "byte")
+        # print("流量速度", flowspeed)
+        tcpcon = 0
+        dt = df[(df.目的IP == IP) & ((df.协议类型 == "TCP") | (df.协议类型 == "AMS"))]  # 为TCP连接数与端口统计筛选范围
 
-    if dt.shape[0] == 0:
-        white = '当前网络无有效流量'  # 白名单检测，统计符合白名单的数据包数量
-    else:
-        white = 1 - (whi(dt, mydb).shape[0] / dt.shape[0])  # 白名单检测，统计符合白名单的数据包数量
+        for i in range(dt.shape[0]):
+            if dt.iloc[i, 9] == 2:  # Flags标志位SYN-0x0002
+                tcpcon = tcpcon + 1
+        if dt.shape[0] == 0:
+            portnum = 0;
+        else:
+            port = dt.groupby('目的端口').describe().reset_index()
+            portnum = port.shape[0]  # 统计被访问端口的数量
+
+        dt = df[(df.目的IP == IP) & ((df.目的端口 == 3389) | (df.源端口 == 3389))]  # 为远程连接筛选范围，3389为远程连接默认端口
+        # dt = df[(df.目的端口 == 3389) | (df.srcport == 3389)]
+        lg = lgout = lgsuccess = lgfail = m = 0
+        conset = False
+        lgset = False  # 设立两个表示连接，登录的状态标志位
+        if dt.shape[0] != 0:
+            for j in range(dt.shape[0]):  # 根据数据包传输层flag标志位，及其出现顺序、间隔的逻辑判断远程登录状态
+                if (dt.iloc[j, 9] == 20) & (lgset is False) & (conset is False):
+                    lg = lg + 1
+                    lgfail = lgfail + 1
+                    lgset = True
+                    m = 0
+                if (dt.iloc[j, 9] == 2) & (0 < m < 2) & (lgset is True):
+                    lgsuccess = lgsuccess + 1
+                    lgfail = lgfail - 1
+                    conset = True
+                    lgset = False
+
+                if (2 <= m) & (lgset is True):
+                    # lgfail = lgfail + 1
+                    lgset = False
+
+                if (dt.iloc[j, 9] == 20) & (conset is True):
+                    lgout = lgout + 1
+                    conset = False
+                m = m + 1
+        # print(lg, lgsuccess, lgfail, lgout)
+
+        dt = df
+
+        for z in range(df.shape[0]):  # 白名单统计前的网段过滤
+
+            if (((str(df.iloc[z, 4]) in IPy.IP("0.0.0.0-127.255.255.255")) is True) \
+                | ((str(df.iloc[z, 4]) in IPy.IP("128.0.0.0-191.255.255.255")) is True) \
+                | ((str(df.iloc[z, 4]) in IPy.IP("192.0.0.0-223.255.255.255")) is True)) & \
+                    (str(df.iloc[z, 5]) == IP):
+                continue
+            else:
+                dt = dt.drop([z])
+        dt = dt.reset_index(drop=True)
+
+        if dt.shape[0] == 0:
+            white = '当前网络无IPC流量'  # 白名单检测，统计符合白名单的数据包数量
+        else:
+            white = 1 - (whi(dt, mydb).shape[0] / dt.shape[0])  # 白名单检测，统计符合白名单的数据包数量
+        # print(df.shape[0], dt.shape[0], whi(dt, mydb).shape[0])
+        # print()
 
     sql = "INSERT INTO 分析表 (流量,流量速度,登录次数,登录失败次数,端口遍历数,tcp连接数,起始时间,终止时间,合法数据包比例,来源) " \
           "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
@@ -330,8 +326,9 @@ def insert_time(IP, file, mydb, startid, sum):
     mycursor = mydb.cursor()
 
     sql = "INSERT INTO 非法操作记录表 (日期,时间,IP,起始时间,终止时间,来源) VALUES (%s,%s,%s,%s,%s,%s)"
-
+    x = i=0
     for i in range(dtmin.shape[0]):
+
         a = dtmin.index[i]
         m, s = divmod(dtmin.iloc[i, 0], 60)
         h, m = divmod(m, 60)
@@ -347,5 +344,4 @@ def insert_time(IP, file, mydb, startid, sum):
             x = mycursor.lastrowid
 
         mydb.commit()  # 写入数据库
-
     return x, i

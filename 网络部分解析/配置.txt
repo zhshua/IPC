@@ -1,12 +1,12 @@
 --------------------IPCip
-IPCip=192.168.2.115
+IPCip=192.168.189.128
 --------------------数据库登录
 host=localhost
 user=root
 password=120197
 database=project1
 --------------------文件信息(file_path=待解析文件夹路径)
-file_path=C:\Users\ZS\Desktop\端口扫描
+file_path=D:\data\pcapdata
 --------------------svm样本集参数设置(依次为:最小流量,最小流量速度,最小tcp连接数,最小登录次数,最小登录失败次数,最小遍历端口次数,合法操作起始时间,合法操作终止时间)
 min_flow=50000
 min_speed=2

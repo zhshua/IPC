@@ -4,7 +4,7 @@ from io import StringIO
 
 
 class conf_read():
-    f1 = open('配置.txt', encoding='utf8')
+    f1 = open('C:\\Users\\ZS\\Desktop\\解析的\\配置.txt', encoding='utf8')
 
     data1 = f1.readlines()
     f1.close()
