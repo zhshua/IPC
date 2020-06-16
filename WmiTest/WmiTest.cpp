@@ -47,6 +47,7 @@ int main()
 	cout << "memory over" << endl;
 	getPatchInfo(wmi);
 	cout << "patch over" << endl;
+	
 	getService(wmi);
 	cout << "service over" << endl;
 	getUserAccount(wmi);
@@ -67,6 +68,8 @@ int main()
 	cout << "port over" << endl;
 	getRegitHash();
 	cout << "regedit over" << endl;
+	
+	system("pause");
 	return 0;
 }
 
@@ -175,6 +178,7 @@ void getSysInfo(CWmiInfo wmi) {
 	getErrorTime(ErrorEndTime);
 
 	char ip[20];
+	cout << "ip...." << endl;
 	getIP(ip);
 
 	char fileName[] = "C:\\data\\txtdata\\sysinfo.txt";
@@ -184,7 +188,7 @@ void getSysInfo(CWmiInfo wmi) {
 	{
 		file << "\nip:";
 		file << ip;
-		file << "systype:";
+		file << "\nsystype:";
 		file << SysType;
 		file << "\ncpu_usage:";
 		file << CpuPre;
@@ -256,10 +260,22 @@ void getIP(char ip[20]) {
 		return;
 	}
 	char temp[1024];
-	for (int i = 0; i < 14; i++) {
+	char flag[8];
+	while (true) {
 		fgets(temp, sizeof(temp), pp);
+		strncpy_s(flag, temp, 7);
+		if (strcmp(flag, "   IPv4") == 0) {
+			break;
+		}
 	}
-	strncpy_s(ip, 20, temp + 39, 15);
+	cout << "222" << endl;
+	int i = 0;
+	while (temp[i + 39] != '\n') {
+		ip[i] = temp[i + 39];
+		i++;
+	}
+	ip[i] = '\0';
+	cout << ip << endl;
 }
 
 void getDisk(CWmiInfo wmi) {
@@ -341,21 +357,29 @@ void getDisk(CWmiInfo wmi) {
 
 void getMemory(CWmiInfo wmi) {
 	CString strRetValue;
+	char memory_size[10][500];
+	double allSize = 0;
 	wmi.GetSingleItemInfo(_T("Win32_PhysicalMemory"), _T("Capacity"), strRetValue);
-	char temp[1024];
-	strncpy_s(temp, sizeof(temp), (LPCTSTR)strRetValue, strlen(strRetValue) - 1);
-	float allSize = getSize(temp);
+	
+	int len = Split(memory_size, strRetValue, "\n");
+	for (int i = 0; i < len; i++)
+	{
+		allSize += getSize(memory_size[i]);
+	}
 
+	char temp[1024];
 	strRetValue = "";
 	wmi.GetSingleItemInfo(_T("Win32_PerfFormattedData_PerfOS_Memory"), _T("AvailableBytes"), strRetValue);
+	//cout << strRetValue << endl;
 	strncpy_s(temp, sizeof(temp), (LPCTSTR)strRetValue, strlen(strRetValue) - 1);
-	float freeSize = getSize(temp);
+	double freeSize = getSize(temp);
 
-	float useSize = allSize - freeSize;
-	float memoryPre = useSize / allSize * 100;
+	double useSize = allSize - freeSize;
+	double memoryPre = useSize / allSize * 100;
 
-	allSize = ((float)((int)((allSize + 0.005) * 100))) / 100;
-	memoryPre = ((float)((int)((memoryPre + 0.005) * 100))) / 100;
+
+	allSize = ((double)((int)((allSize + 0.005) * 100))) / 100;
+	memoryPre = ((double)((int)((memoryPre + 0.005) * 100))) / 100;
 
 	char fileName[] = "C:\\data\\txtdata\\memory.txt";
 	writeTime(fileName);
@@ -404,7 +428,7 @@ void getTwinCatInfo(const char* dir) {
 				strcpy_s(fileName, dir);
 				strcat_s(fileName, "\\");
 				strcat_s(fileName, findData.cFileName);
-				char sha1[80];
+				char sha1[100];
 				getSha1(fileName, sha1);
 
 				char writeFileName[] = "C:\\data\\txtdata\\industrial_system_files.txt";
@@ -427,7 +451,7 @@ void getTwinCatInfo(const char* dir) {
 				strcpy_s(fileName, dir);
 				strcat_s(fileName, "\\");
 				strcat_s(fileName, findData.cFileName);
-				char sha1[80];
+				char sha1[100];
 				getSha1(fileName, sha1);
 
 				char writeFileName[] = "C:\\data\\txtdata\\industrial_programming_files.txt";
@@ -452,21 +476,27 @@ void getTwinCatInfo(const char* dir) {
 
 void getPatchInfo(CWmiInfo wmi) {
 	CString strRetValue;
-	char patchID[200][500];
-	char patchFrom[200][500];
-	char installTime[200][500];
+	char patchID[500][500];
+	char patchFrom[500][500];
+	char installTime[500][500];
+	//cout << "1" << endl;
 	char fileName[] = "C:\\data\\txtdata\\patch.txt";
 
 	wmi.GetSingleItemInfo(_T("Win32_QuickFixEngineering"), _T("HotFixID"), strRetValue);
+	//cout << "1.1" << endl;
+	//cout << strRetValue << endl;
 	int len = Split(patchID, strRetValue, "\n");
+	//cout << len << endl;
 
 	strRetValue = "";
 	wmi.GetSingleItemInfo(_T("Win32_QuickFixEngineering"), _T("Caption"), strRetValue);
 	Split(patchFrom, strRetValue, "\n");
+	//cout << "2" << endl;
 
 	strRetValue = "";
 	wmi.GetSingleItemInfo(_T("Win32_QuickFixEngineering"), _T("InstalledOn"), strRetValue);
 	Split(installTime, strRetValue, "\n");
+	//cout << "3" << endl;
 
 	ofstream file(fileName);
 	for (int i = 0; i < len; i++) {
@@ -486,8 +516,8 @@ void getPatchInfo(CWmiInfo wmi) {
 
 void getService(CWmiInfo wmi) {
 	CString strRetValue;
-	char serviceName[300][500];
-	char serviceAddress[300][500];
+	char serviceName[500][500];
+	char serviceAddress[500][500];
 	char fileName1[] = "C:\\data\\txtdata\\system_services.txt";
 	char fileName2[] = "C:\\data\\txtdata\\notsystem_services.txt";
 
@@ -504,7 +534,7 @@ void getService(CWmiInfo wmi) {
 	ofstream file1(fileName1);
 	ofstream file2(fileName2);
 	for (int i = 0; i < len; i++) {
-		char path[200];
+		char path[500];
 		int j = getPath(path, serviceAddress[i]);
 		path[j] = '\0';
 		if (memcmp(path, sysName1, strlen(sysName1)) == 0 || memcmp(path, sysName2, strlen(sysName2)) == 0) {
