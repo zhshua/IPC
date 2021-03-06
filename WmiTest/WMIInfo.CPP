@@ -81,6 +81,7 @@ BOOL CWmiInfo::GetSingleItemInfo(CString ClassName, CString ClassMember, CString
         query += CComBSTR(ClassName);
         hr = m_pWbemSvc->ExecQuery(CComBSTR("WQL"), query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
             0, &m_pEnumClsObj);
+		
         if (SUCCEEDED(hr))
         {
             //初始化vtProp值
@@ -88,12 +89,18 @@ BOOL CWmiInfo::GetSingleItemInfo(CString ClassName, CString ClassMember, CString
             uReturn = 0;
 
             //返回从当前位置起的第一个对象到m_pWbemClsObj中
+			//char debug[5];
+			//readini(CONF_PATH, "client", "debug", debug);
             while (true)
             {
+				//if(strcmp(debug, "1") != 0)
+//		Sleep(3000);
                 hr = m_pEnumClsObj->Next(WBEM_INFINITE, 1, &m_pWbemClsObj, &uReturn);
                 CString temp;
+				//std::cout << uReturn << std::endl;
                 if (SUCCEEDED(hr) && uReturn > 0)
                 {
+					
                     //从m_pWbemClsObj中找出ClassMember标识的成员属性值,并保存到vtProp变量中
                     hr = m_pWbemClsObj->Get(CComBSTR(ClassMember), 0, &vtProp, 0, 0);
                     if (SUCCEEDED(hr))
@@ -103,6 +110,7 @@ BOOL CWmiInfo::GetSingleItemInfo(CString ClassName, CString ClassMember, CString
                         bRet = TRUE;
                         chRetValue += temp;
                         chRetValue += "\n";
+						//std::cout << temp << std::endl;
                     }
                 }
                 else { break; }
@@ -122,60 +130,65 @@ BOOL CWmiInfo::GetSingleItemInfo(CString ClassName, CString ClassMember, CString
     return bRet;
 }
 
-//BOOL CWmiInfo::GetGroupItemInfo(CString ClassName, CString ClassMember[], int n, CString& chRetValue)
-//{
-//    USES_CONVERSION;
-//
-//    CComBSTR query("SELECT * FROM ");
-//    CString result, info;
-//    VARIANT vtProp;
-//    ULONG uReturn;
-//    HRESULT hr;
-//    int i;
-//    BOOL bRet = FALSE;
-//    if (NULL != m_pWbemSvc)
-//    {
-//        query += CComBSTR(ClassName);
-//        hr = m_pWbemSvc->ExecQuery(CComBSTR("WQL"), query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 0, &m_pEnumClsObj);
-//        if (SUCCEEDED(hr))
-//        {
-//            VariantInit(&vtProp); //初始化vtProp变量
-//            if (m_pEnumClsObj)
-//            {
-//                Sleep(10);
-//                uReturn = 0;
-//                hr = m_pEnumClsObj->Next(WBEM_INFINITE, 1, &m_pWbemClsObj, &uReturn);
-//                if (SUCCEEDED(hr) && uReturn > 0)
-//                {
-//                    for (i = 0; i < n; ++i)
-//                    {
-//                        hr = m_pWbemClsObj->Get(CComBSTR(ClassMember[i]), 0, &vtProp, 0, 0);
-//                        if (SUCCEEDED(hr))
-//                        {
-//                            VariantToString(&vtProp, info);
-//                            chRetValue += info + _T("\t");
-//                            VariantClear(&vtProp);
-//                            bRet = TRUE;
-//                        }
-//                    }
-//                    chRetValue += _T("\r\n");
-//                }
-//            }
-//        }
-//    }
-//
-//    if (NULL != m_pEnumClsObj)
-//    {
-//        hr = m_pEnumClsObj->Release();
-//        m_pEnumClsObj = NULL;
-//    }
-//    if (NULL != m_pWbemClsObj)
-//    {
-//        hr = m_pWbemClsObj->Release();
-//        m_pWbemClsObj = NULL;
-//    }
-//    return bRet;
-//}
+BOOL CWmiInfo::GetGroupItemInfo(CString ClassName, CString ClassMember[], int n, CString& chRetValue)
+{
+    USES_CONVERSION;
+
+    CComBSTR query("SELECT * FROM ");
+    CString result, info;
+    VARIANT vtProp;
+    ULONG uReturn;
+    HRESULT hr;
+    int i;
+    BOOL bRet = FALSE;
+    if (NULL != m_pWbemSvc)
+    {
+        query += CComBSTR(ClassName);
+        hr = m_pWbemSvc->ExecQuery(CComBSTR("WQL"), query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 0, &m_pEnumClsObj);
+        if (SUCCEEDED(hr))
+        {
+            VariantInit(&vtProp); //初始化vtProp变量
+            if (m_pEnumClsObj)
+            {
+                Sleep(10);
+                uReturn = 0;
+				while (true)
+				{
+					hr = m_pEnumClsObj->Next(WBEM_INFINITE, 1, &m_pWbemClsObj, &uReturn);
+					if (SUCCEEDED(hr) && uReturn > 0)
+					{
+						for (i = 0; i < n; ++i)
+						{
+							hr = m_pWbemClsObj->Get(CComBSTR(ClassMember[i]), 0, &vtProp, 0, 0);
+							if (SUCCEEDED(hr))
+							{
+								VariantToString(&vtProp, info);
+								chRetValue += info + _T("\t");
+								VariantClear(&vtProp);
+								bRet = TRUE;
+							}
+						}
+						chRetValue += _T("\r\n");
+					}
+					else
+						break;
+				} 
+            }
+        }
+    }
+
+    if (NULL != m_pEnumClsObj)
+    {
+        hr = m_pEnumClsObj->Release();
+        m_pEnumClsObj = NULL;
+    }
+    if (NULL != m_pWbemClsObj)
+    {
+        hr = m_pWbemClsObj->Release();
+        m_pWbemClsObj = NULL;
+    }
+    return bRet;
+}
 
 void CWmiInfo::VariantToString(const LPVARIANT pVar, CString& chRetValue) const
 {

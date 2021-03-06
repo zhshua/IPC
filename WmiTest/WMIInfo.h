@@ -3,7 +3,9 @@
 #include <atlbase.h>
 #include <afxpriv.h>
 #include <WbemIdl.h>
+#include <iostream>
 #pragma comment(lib,"WbemUuid.lib")
+
 
 class CWmiInfo
 {
@@ -17,7 +19,7 @@ public:
 
 
 	BOOL GetSingleItemInfo(CString, CString, CString&);
-	/*BOOL GetGroupItemInfo(CString, CString[], int, CString&);*/
+	BOOL GetGroupItemInfo(CString, CString[], int, CString&);
 
 private:
 	void VariantToString(const LPVARIANT, CString&) const;//将Variant类型的变量转换为CString
