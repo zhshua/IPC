@@ -91,6 +91,7 @@ int main()
 	while (1)
 	{
 		Sleep(2000);
+		/*
 		char delete_txt_cmd[] = "del /q C:\\data\\txtdata\\*";
 		if(delete_data)
 			system(delete_txt_cmd);
@@ -114,8 +115,8 @@ int main()
 		char get_net_cmd[] = "C:\\IPC_project\\network.exe";
 		if(get_data)
 			system(get_net_cmd);
-
-		//Sleep(2000);
+		*/
+		Sleep(2000);
 		char txtdir[] = "C:\\data\\txtdata";//txt文件的根目录
 		printf("starting transfer txtdata...\n");
 		TransferFile(txtdir);
@@ -259,11 +260,11 @@ int BuildPacket(BYTE *pbyBuff, int nBuffLen, BYTE *DataBuff, int nDataLen)
 	pEthHdr->dest_hwaddr[5] = 0xff;
 
 	pEthHdr->source_hwaddr[0] = 0x00;				//这个最好获取一下真实的
-	pEthHdr->source_hwaddr[1] = 0x01;
-	pEthHdr->source_hwaddr[2] = 0x05;
-	pEthHdr->source_hwaddr[3] = 0x3e;
-	pEthHdr->source_hwaddr[4] = 0x25;
-	pEthHdr->source_hwaddr[5] = 0x53;
+	pEthHdr->source_hwaddr[1] = 0x0c;
+	pEthHdr->source_hwaddr[2] = 0x29;
+	pEthHdr->source_hwaddr[3] = 0x3b;
+	pEthHdr->source_hwaddr[4] = 0xc9;
+	pEthHdr->source_hwaddr[5] = 0xc7;
 
 	pEthHdr->frame_type = htons(0x0800);
 

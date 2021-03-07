@@ -35,6 +35,7 @@ int main()
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
 	{
 		fprintf(stderr, "unable to open network device:%s\n", errbuf);
+		Sleep(1000);
 		return 1;
 	}
 	for (device = alldevs; device != NULL; device = device->next)
@@ -50,6 +51,7 @@ int main()
 		else
 			printf("No device description information!");
 	}
+	Sleep(2000);
 	if (i == 0)
 	{
 		printf("\nPlease install WinPcap first!");
@@ -80,7 +82,7 @@ int main()
 
 	if ((adhandle = pcap_open(device->name,
 		65536,
-		PCAP_OPENFLAG_PROMISCUOUS,
+		0,
 		1000,
 		NULL,
 		errbuf
@@ -139,9 +141,9 @@ int main()
 void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *pkt_header, const u_char *pkt_data)
 {
 	//printf("捕获到第%d批的共%d个数据包，第%u秒\n",k, z++,((clock()-t1)/ CLOCKS_PER_SEC));
-	printf("catch %d packets\n", z++);
+	//printf("catch %d packets\n", z++);
 	if (clock() > (t1 + min * CLOCKS_PER_SEC)) {
-		printf("catch stop\n");
+		//printf("catch stop\n");
 		//system("pause");
 		pcap_breakloop(adhandle);
 		return;
@@ -154,7 +156,7 @@ void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *pkt_header, cons
 		dumpfile = (u_char *)pcap_dump_open(adhandle, path1);
 		pcap_dump(dumpfile, pkt_header, pkt_data);
 		if (_kbhit()) {
-			printf("catch stop\n");
+			//printf("catch stop\n");
 			system("pause");
 		}
 		pcap_loop(adhandle, 0, packet_handler, (unsigned char *)dumpfile);

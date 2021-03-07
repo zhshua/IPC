@@ -38,10 +38,25 @@ int main()
 	readini(CONF_PATH, "client", "debug", read_buf);
 	int debug = atoi(read_buf);
 
+	char arp_mac[20] = { '\0' };
+	memset(arp_mac, 0, sizeof(arp_mac));
+	readini(CONF_PATH, "client", "arp_mac", arp_mac);
+
+	char arp_ip[30] = { '\0' };
+	memset(arp_ip, 0, sizeof(arp_ip));
+	readini(CONF_PATH, "client", "arp_ip", arp_ip);
+	
+	char arp[50] = { '\0' };
+	sprintf(arp, "arp -s %s %s", arp_ip, arp_mac);
+	//sprintf(arp, "%s ", arp_ip);
+	//sprintf(arp, "%s", arp_mac);
+	//puts(arp);
+	system(arp);
+
 	while (1)
 	{
 		Sleep(2000);
-		/*
+		
 		char delete_txt_cmd[] = "del /q C:\\data\\txtdata\\*";
 		if(delete_data)
 		system(delete_txt_cmd);
@@ -65,7 +80,7 @@ int main()
 		char get_net_cmd[] = "C:\\IPC_project\\network.exe";
 		if(get_data)
 		system(get_net_cmd);
-		*/
+		
 		Sleep(2000);
 		char txtdir[] = "C:\\data\\txtdata";//txt文件的根目录
 		printf("starting transfer txtdata...\n");
@@ -140,7 +155,7 @@ void TransferFile(char *dir)
 		}
 		else
 		{
-			printf("starting transfer %d file...\n", i);
+			//printf("starting transfer %d file...\n", i);
 			fseek(fp, 0, SEEK_END);
 			int size = ftell(fp);
 			rewind(fp);
