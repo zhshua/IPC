@@ -1,13 +1,15 @@
 ﻿#define _WINSOCK_DEPRECATED_NO_WARNINGS 1
+#define _WIN32_WINNT   0x0501
 #include "../config.h"
+#include "sha1.h"
 #include "WMIInfo.h"
+#include <Windows.h>
 #include <iostream>
 #include <fstream>
 #include <time.h>
 #pragma comment(lib, "version.lib")
 #include <sstream>
 #include <WinSock2.h>
-#include <Windows.h>
 #include <cstring>
 #pragma comment(lib,"WS2_32.lib")
 
@@ -23,7 +25,7 @@ void getSysStartTime(CWmiInfo wmi, char StartTime[20]);
 void getErrorTime(char time[20]);
 void getIP(char ip[20]);
 void getDisk(CWmiInfo wmi);
-void getMemory(CWmiInfo wmi);
+void getMemory();
 void getTwinCatInfo(const char* dir);
 void getPatchInfo(CWmiInfo wmi);
 void getService(CWmiInfo wmi);
@@ -35,45 +37,95 @@ void getPort();
 void getRegitHash();
 
 
-
 int main()
 {
+	
+	//Sleep(1000000);
+	char read_buf[20] = { '\0' };
+	readini(CONF_PATH, "wmitest", "sysinfo", read_buf);
+	int sysinfo = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "disk", read_buf);
+	int disk = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "memory", read_buf);
+	int memory = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "patch", read_buf);
+	int patch = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "service", read_buf);
+	int service = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "user", read_buf);
+	int user = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "process", read_buf);
+	int process = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "exe", read_buf);
+	int exe = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "twincat", read_buf);
+	int twincat = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "port", read_buf);
+	int port = atoi(read_buf);
+
+	memset(read_buf, 0, sizeof(read_buf));
+	readini(CONF_PATH, "wmitest", "regit", read_buf);
+	int regit = atoi(read_buf);
+
 	CWmiInfo wmi;
 	wmi.InitWmi();
 	
-	getSysInfo(wmi);//获取ip地址，操作系统版本，CPU利用率，本次开机时间，最近一次异常断电时间
+	if(sysinfo)
+		getSysInfo(wmi);//获取ip地址，操作系统版本，CPU利用率，本次开机时间，最近一次异常断电时间
 	cout << "sysinfo over" << endl;
 	Sleep(1000);
 
-	getDisk(wmi);
+	if(disk)
+		getDisk(wmi);
 	cout << "disk over" << endl;
 	Sleep(1000);
 
-	getMemory(wmi);
+	if(memory)
+		getMemory();
 	cout << "memory over" << endl;
 	Sleep(2000);
 	
-	
-	getPatchInfo(wmi);
+	if(patch)
+		getPatchInfo(wmi);
 	cout << "patch over" << endl;
 	Sleep(2000);
 	
-	
-	getService(wmi);
+	if(service)
+		getService(wmi);
 	cout << "service over" << endl;
 	Sleep(2000);
 	
 	
-	
-	getUserAccount(wmi);
+	if(user)
+		getUserAccount(wmi);
 	cout << "user over" << endl;
 	Sleep(2000);
 
-	getExeInfo(wmi);
+	if(exe)
+		getExeInfo(wmi);
 	cout << "app over" << endl;
 	Sleep(2000);
 
-	getProcess(wmi);
+	if(process)
+		getProcess(wmi);
 	cout << "process over" << endl;
 	Sleep(2000);
 	
@@ -85,15 +137,18 @@ int main()
 	//writeTime(fileName1);
 	char fileName2[] = "C:\\data\\txtdata\\industrial_programming_files.txt";
 	//writeTime(fileName2);
-	getTwinCatInfo(TwinCatPath);
+	if(twincat)
+		getTwinCatInfo(TwinCatPath);
 	cout << "TwinCatInfo over" << endl;
 	Sleep(2000);
 
-	getPort();
+	if(port)
+		getPort();
 	cout << "port over" << endl;
 	Sleep(2000);
 
-	getRegitHash();
+	if(regit)
+		getRegitHash();
 	cout << "regedit over" << endl;
 	Sleep(2000);
 	
@@ -101,6 +156,7 @@ int main()
 }
 
 void getPatchInfo(CWmiInfo wmi) {
+	
 	CString strRetValue;
 	char patchID[500][500];
 	char patchFrom[500][500];
@@ -243,6 +299,39 @@ float getSize(char temp[]) {
 	return size / 1024;
 }
 
+
+void getSha2(const char fileName[], char sha1[])
+{
+	string message;
+	char c;
+	FILE* fp;
+	fp = fopen(fileName, "rb");
+
+	while (!feof(fp)) {
+		//fread(buffer, sizeof(buffer), 1, fp);
+		c = fgetc(fp);
+		message += c;
+	}
+	//cout << message << endl;
+
+	vector<vector<int> > result;
+
+	SHA1 hash;   //定义SHA1算法类
+	result = hash.SHA_1(message);
+	
+	int i = 0;
+	for(auto str : result)
+		for (char ch : hash.num_into_message(str))
+		{
+			sha1[i] = ch;
+			//cout << sha1[i];
+			i++;
+		}
+	sha1[i] = '\0';
+	//cout << endl;
+}
+
+
 void getSha1(const char fileName[], char sha1[]) {
 	char cmd[1024];
 	strcpy_s(cmd, "certutil -hashfile \"");
@@ -268,6 +357,7 @@ void getSha1(const char fileName[], char sha1[]) {
 	_pclose(pp);
 	//Sleep(500);
 }
+
 
 int getPath(char path[], char servicePath[]) {
 	int i = 0;
@@ -481,31 +571,18 @@ void getDisk(CWmiInfo wmi) {
 	}
 }
 
-void getMemory(CWmiInfo wmi) {
-	CString strRetValue;
-	char memory_size[10][500];
-	double allSize = 0;
-	wmi.GetSingleItemInfo(_T("Win32_PhysicalMemory"), _T("Capacity"), strRetValue);
-	
-	int len = Split(memory_size, strRetValue, "\n");
-	for (int i = 0; i < len; i++)
-	{
-		allSize += getSize(memory_size[i]);
-	}
 
-	char temp[1024];
-	strRetValue = "";
-	wmi.GetSingleItemInfo(_T("Win32_PerfFormattedData_PerfOS_Memory"), _T("AvailableBytes"), strRetValue);
-	//cout << strRetValue << endl;
-	strncpy_s(temp, sizeof(temp), (LPCTSTR)strRetValue, strlen(strRetValue) - 1);
-	double freeSize = getSize(temp);
+void getMemory()
+{
+	//内存使用率
+	char bufmemory[5];
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof(statex);
+	GlobalMemoryStatusEx(&statex);
+	sprintf(bufmemory, "%ld", statex.dwMemoryLoad);
+	//puts(bufmemory);
 
-	double useSize = allSize - freeSize;
-	double memoryPre = useSize / allSize * 100;
-
-
-	allSize = ((double)((int)((allSize + 0.005) * 100))) / 100;
-	memoryPre = ((double)((int)((memoryPre + 0.005) * 100))) / 100;
+	double allSize = 2.0;
 
 	char fileName[] = "C:\\data\\txtdata\\memory.txt";
 	writeTime(fileName);
@@ -515,7 +592,7 @@ void getMemory(CWmiInfo wmi) {
 		file << "memory_size:";
 		file << allSize;
 		file << "G\nmemory_usage:";
-		file << memoryPre;
+		file << bufmemory;
 		file << "%";
 		file.close();
 	}
@@ -534,7 +611,7 @@ void getTwinCatInfo(const char* dir) {
 	hFind = FindFirstFile(dirNew, &findData);
 	do
 	{
-		//Sleep(100);
+		Sleep(1000);
 		if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
 			continue;
 		// 是否是文件夹
@@ -814,32 +891,16 @@ void getPort() {
 
 void getRegitHash() {
 	char cmd[1024];
-	strcpy_s(cmd, "reg export HKCR C:\\HKCR.reg -y");
+	strcpy_s(cmd, "reg export HKLM\\System\\CurrentControlSet\\Control\\Lsa C:\\data\\regedit_data\\Lsa.reg -y");
 	FILE* pp = _popen(cmd, "r");
 	if (!pp) {
 		return;
 	}
 	char temp[1024];
 	fgets(temp, sizeof(temp), pp);
-	Sleep(3000);
+	Sleep(1000);
 
-	strcpy_s(cmd, "reg export HKCU C:\\HKCU.reg -y");
-	pp = _popen(cmd, "r");
-	if (!pp) {
-		return;
-	}
-	fgets(temp, sizeof(temp), pp);
-	Sleep(3000);
-
-	strcpy_s(cmd, "reg export HKCC C:\\HKCC.reg -y");
-	pp = _popen(cmd, "r");
-	if (!pp) {
-		return;
-	}
-	fgets(temp, sizeof(temp), pp);
-	Sleep(3000);
-
-	strcpy_s(cmd, "reg export HKLM C:\\HKLM.reg -y");
+	strcpy_s(cmd, "reg export HKLM\\System\\CurrentControlSet\\Services\\LanManServer\\Parameters C:\\data\\regedit_data\\LanManServer.reg -y");
 	pp = _popen(cmd, "r");
 	if (!pp) {
 		return;
@@ -847,38 +908,104 @@ void getRegitHash() {
 	fgets(temp, sizeof(temp), pp);
 	Sleep(1000);
 
-	strcpy_s(cmd, "reg export HKU C:\\HKU.reg -y");
+	strcpy_s(cmd, "reg export HKLM\\System\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters C:\\data\\regedit_data\\LanmanWorkstation.reg -y");
 	pp = _popen(cmd, "r");
 	if (!pp) {
 		return;
 	}
 	fgets(temp, sizeof(temp), pp);
-	Sleep(3000);
+	Sleep(1000);
 
-	char sha1[5][80];
-	getSha1("C:\\HKCR.reg", sha1[0]);
-	getSha1("C:\\HKCU.reg", sha1[1]);
-	getSha1("C:\\HKCC.reg", sha1[2]);
-	getSha1("C:\\HKLM.reg", sha1[3]);
-	getSha1("C:\\HKU.reg", sha1[4]);
+	strcpy_s(cmd, "reg export HKLM\\System\\CurrentControlSet\\Services\\Netlogon\\Parameters C:\\data\\regedit_data\\Netlogon.reg -y");
+	pp = _popen(cmd, "r");
+	if (!pp) {
+		return;
+	}
+	fgets(temp, sizeof(temp), pp);
+	Sleep(1000);
+
+	strcpy_s(cmd, "reg export \"HKLM\\Software\\Microsoft\\Driver Signing\" C:\\data\\regedit_data\\DriverSigning.reg -y");
+	pp = _popen(cmd, "r");
+	if (!pp) {
+		return;
+	}
+	fgets(temp, sizeof(temp), pp);
+	Sleep(1000);
+
+	strcpy_s(cmd, "reg export HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System C:\\data\\regedit_data\\System.reg -y");
+	pp = _popen(cmd, "r");
+	if (!pp) {
+		return;
+	}
+	fgets(temp, sizeof(temp), pp);
+	Sleep(1000);
+
+	strcpy_s(cmd, "reg export \"HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Setup\\RecoveryConsole\" C:\\data\\regedit_data\\RecoveryConsole.reg -y");
+	pp = _popen(cmd, "r");
+	if (!pp) {
+		return;
+	}
+	fgets(temp, sizeof(temp), pp);
+	Sleep(1000);
+
+	/*
+	strcpy_s(cmd, "reg export \"HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" C:\\data\\regedit_data\\Winlogon.reg -y");
+	pp = _popen(cmd, "r");
+	if (!pp) {
+		return;
+	}
+	fgets(temp, sizeof(temp), pp);
+	Sleep(1000);
+	*/
+	Sleep(5000);
+	//printf("start getsha1...\n");
+	char sha1[8][80];
+	//getSha2("C:\\data\\regedit_data\\Lsa.reg", sha1[0]);
+	getSha2("C:\\data\\regedit_data\\LanManServer.reg", sha1[1]);
+	Sleep(2000);
+	getSha2("C:\\data\\regedit_data\\LanmanWorkstation.reg", sha1[2]);
+	Sleep(2000);
+	getSha2("C:\\data\\regedit_data\\Netlogon.reg", sha1[3]);
+	Sleep(2000);
+	getSha2("C:\\data\\regedit_data\\DriverSigning.reg", sha1[4]);
+	Sleep(2000);
+	getSha2("C:\\data\\regedit_data\\System.reg", sha1[5]);
+	Sleep(2000);
+	getSha2("C:\\data\\regedit_data\\RecoveryConsole.reg", sha1[6]);
+	Sleep(2000);
+	//getSha1("C:\\data\\regedit_data\\Winlogon.reg", sha1[7]);
+
+	//Sleep(5000);
+	//printf("start write file...\n");
 	char fileName[] = "C:\\data\\txtdata\\regedit.txt";
 	ofstream file(fileName);
 	if (file.is_open()){
-		file << "name:HKCR";
+		file << "name:Lsa";
 		file << "\nsha1:";
 		file << sha1[0];
-		file << "\nname:HKCU";
+		file << "\nname:LanManServer";
 		file << "\nsha1:";
 		file << sha1[1];
-		file << "\nname:HKCC";
+		file << "\nname:LanmanWorkstation";
 		file << "\nsha1:";
 		file << sha1[2];
-		file << "\nname:HKLM";
+		file << "\nname:Netlogon";
 		file << "\nsha1:";
 		file << sha1[3];
-		file << "\nname:HKU";
+		file << "\nname:DriverSigning";
 		file << "\nsha1:";
 		file << sha1[4];
+
+		file << "\nname:System";
+		file << "\nsha1:";
+		file << sha1[5];
+		file << "\nname:RecoveryConsole";
+		file << "\nsha1:";
+		file << sha1[6];
+		//file << "\nname:Winlogon";
+		//file << "\nsha1:";
+		//file << sha1[7];
 	}
 	file.close();
+	
 }
